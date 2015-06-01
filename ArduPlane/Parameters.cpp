@@ -1202,6 +1202,12 @@ const AP_Param::Info Plane::var_info[] PROGMEM = {
     // @Path: ../libraries/AP_RSSI/AP_RSSI.cpp
     GOBJECT(rssi, "RSSI_",  AP_RSSI),
 
+#if AP_ACS_USE == TRUE
+    // @Group: ACS_
+    // @Path: ../libraries/AP_ACS/AP_ACS.cpp
+    GOBJECT(acs,         "ACS_",   AP_ACS),
+#endif
+
     AP_VAREND
 };
 
