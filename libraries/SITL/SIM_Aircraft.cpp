@@ -175,20 +175,24 @@ void Aircraft::sync_frame_time(void)
                  (double)rate_hz,
                  (double)scaled_frame_time_us);
 #endif
+ 
         uint64_t first_wall_time_us = hal.scheduler->get_start_time_micros64();
         uint64_t sim_time = first_wall_time_us + hal.scheduler->micros64();
-        int64_t diff = now - sim_time;
+        uint64_t scaled_wall_time_us = first_wall_time_us + 
+                      (uint64_t) ((now - first_wall_time_us) * target_speedup);
+        int64_t diff = scaled_wall_time_us - sim_time;
 
-        //Watch diff slowly climb
-        printf("%f = %lf - %lf \n", float(diff)     / 1000000.0f,
-                                    double(now)      / 1000000.0,
-                                    double(sim_time) / 1000000.0);
+#if 0
+        printf("%f = %lf - %lf \n", float(diff)                 / 1000000.0f,
+                                    double(scaled_wall_time_us) / 1000000.0,
+                                    double(sim_time)            / 1000000.0);
+#endif //0
 
-        uint32_t sleep_time = scaled_frame_time_us*frame_counter;
-
-        if (sleep_time > min_sleep_time) {
-            usleep(sleep_time);
+        //slow down a bit if sim_time has gotten ahead of wall_time
+        if (diff < 0) {
+            usleep(100000);
         }
+        
         last_wall_time_us = now;
         frame_counter = 0;
     }
