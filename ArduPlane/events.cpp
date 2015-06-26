@@ -133,9 +133,19 @@ void Plane::low_battery_event(void)
                       (double)battery.voltage(), (double)battery.current_total_mah());
     if (flight_stage != AP_SpdHgtControl::FLIGHT_LAND_FINAL &&
         flight_stage != AP_SpdHgtControl::FLIGHT_LAND_APPROACH) {
-    	set_mode(RTL);
-    	aparm.throttle_cruise.load();
+#if AP_ACS_USE == TRUE
+        gcs_send_text_P(SEVERITY_HIGH,PSTR("Battery low: auto-landing."));
+
+        //start landing if not already (ACS-specific behavior -- land vice RTL)
+        if (! jump_to_landing_sequence()) {
+            gcs_send_text_P(SEVERITY_HIGH,PSTR("Failed to start emergency land sequence!!"));
+        }
+#else
+        set_mode(RTL);
+        aparm.throttle_cruise.load();
+#endif //AP_ACS_USE == TRUE
     }
+
     failsafe.low_battery = true;
     AP_Notify::flags.failsafe_battery = true;
 }
